@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.marco.build.LinkBuilder;
+import org.marco.builder.LinkBuilder;
 import org.marco.model.Link;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
