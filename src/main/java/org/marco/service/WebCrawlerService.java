@@ -16,12 +16,16 @@ import org.jsoup.nodes.Document;
 import org.marco.convert.LinkConverter;
 import org.marco.model.Link;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class WebCrawlerService {
 	private HashMap<String, Link> links = new HashMap<>();
-
+	
+	@Value("${webcrawler.timeout:5000}")
+	private Integer TIMEOUT_IN_MS;
+	
 	@Autowired
 	private LinkConverter linkConverter;
 
@@ -38,11 +42,11 @@ public class WebCrawlerService {
 	}
 
 	private Link asyncPageLinks(String url, URL domain) {
-		if (links.containsKey(url)) return null;
 		try {
+			if (links.containsKey(url) || !isInternalUrl(url, domain)) return null;
 			Link link = getLink(url, domain);
 			links.put(url, link);
-			getLinksChindren(domain, link);
+			getLinksChildren(domain, link);
 			return link;
 		} catch (IOException | InterruptedException | ExecutionException e) {
 			System.err.println("For '" + url + "': " + e.getMessage());
@@ -50,7 +54,7 @@ public class WebCrawlerService {
 		}
 	}
 
-	private void getLinksChindren(URL domain, Link link) throws InterruptedException, ExecutionException {
+	private void getLinksChildren(URL domain, Link link) throws InterruptedException, ExecutionException {
 		List<CompletableFuture<Link>> futuristicPage = link.getChildrens()
 				.stream()
 				.map(x->getPageLinks(x, domain))
@@ -60,9 +64,9 @@ public class WebCrawlerService {
 	}
 
 	private Link getLink(String url, URL domain) throws IOException {
-		Response con = Jsoup.connect(url).timeout(5000).execute();
-		Document document = con.parse();
-		Link link = linkConverter.from(document, con);
+		Response response = Jsoup.connect(url).timeout(TIMEOUT_IN_MS).execute();
+		Document document = response.parse();
+		Link link = linkConverter.from(document, response);
 		if (isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
 		return link;
 	}

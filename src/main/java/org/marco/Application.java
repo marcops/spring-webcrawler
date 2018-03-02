@@ -1,6 +1,7 @@
 package org.marco;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -28,14 +29,24 @@ public class Application implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
-		//"http://www.soscarro.com.br"
-		List<Link> links = webCrawlerService.execute("http://wiprodigital.com");
+		if(!isUrlValid(args[0])) return;
+		List<Link> links = webCrawlerService.execute(args[0]);
 		exportSitemap(links);
+	
+	}
+
+	private Boolean isUrlValid(String url) {
+		try {
+			new URL(url);
+		} catch (Exception e) {
+			System.err.println("usage: java -jar app.jar http://example.com/");
+			return false;
+		}
+		return true;
 	}
 
 	private void exportSitemap(List<Link> links) throws IOException {
 		Files.write(Paths.get(EXPORT_TO), new Gson().toJson(links).getBytes());
-		System.out.println(new Gson().toJson(links));
 	}
 
 }

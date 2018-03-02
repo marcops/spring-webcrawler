@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LinkConverter {
-	public Link from(Document document, Response con) {
+	public Link from(Document document, Response response) {
 		Link link = new Link();
 		link.setTitle(document.title());
 		link.setUrl(document.location());
-		link.setLastModified(con.header("Last-Modified"));
+		link.setLastModified(response.header("Last-Modified"));
 		link.setChildrens(new HashSet<>());
 		return link;
 	}

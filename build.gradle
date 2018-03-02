@@ -13,7 +13,7 @@ repositories {
 project.ext {
     junitVersion = '4.12'
     jsoupVersion = '1.11.2'
-    jsonVersion = '2.8.2'
+    gsonVersion = '2.8.2'
 }
 
 dependencies {
