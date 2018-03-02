@@ -49,12 +49,12 @@ public class WebCrawlerService {
 				links.put(url, link);
 				
 				if(link != null) {
-					List<CompletableFuture<Link>> pageContentFutures = 
-							link.getChildrens().stream().map(x->getPageLinks(x, domain)).collect(Collectors.toList());
+					List<CompletableFuture<Link>> pagesFutures = link.getChildrens()
+							.stream()
+							.map(x->getPageLinks(x, domain))
+							.collect(Collectors.toList());
 					
-					CompletableFuture<Void> allFutures = CompletableFuture.allOf(
-					        pageContentFutures.toArray(new CompletableFuture[pageContentFutures.size()]));
-					allFutures.get();
+					CompletableFuture.allOf(pagesFutures.toArray(new CompletableFuture[pagesFutures.size()])).get();
 				}
 				        
 				return link;
