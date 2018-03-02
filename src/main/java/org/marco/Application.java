@@ -21,14 +21,15 @@ public class Application implements CommandLineRunner {
 	private WebCrawlerService webCrawlerService;
 
 	private static final String EXPORT_TO = "sitemap.json";
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		List<Link> links = webCrawlerService.execute("http://www.soscarro.com.br");
+		//"http://www.soscarro.com.br"
+		List<Link> links = webCrawlerService.execute("http://wiprodigital.com");
 		exportSitemap(links);
 	}
 

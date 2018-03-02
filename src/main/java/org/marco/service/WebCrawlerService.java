@@ -25,55 +25,58 @@ public class WebCrawlerService {
 	@Autowired
 	private LinkConverter linkConverter;
 
-	public List<Link> execute(String domain) throws InterruptedException, ExecutionException {
-		CompletableFuture <Link> cf = getPageLinks(domain, domain);
-		cf.get();
+	public List<Link> execute(String domain) throws Exception  {
+		getPageLinks(domain, new URL(domain)).get();
 		return links
 				.values()
 				.stream()
 				.collect(Collectors.toList());
-		
 	}
 	
-	
-	private CompletableFuture<Link> getPageLinks(String url, String domain) {
-		return CompletableFuture.supplyAsync(() -> {
-			if (links.containsKey(url)) return null;
-			try {
-				Response con =  Jsoup.connect(url).timeout(5000).execute();
-				Document document =  con.parse();
-				Link link = linkConverter.from(document, con);
-				
-				if(isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
-	
-				links.put(url, link);
-				
-				if(link != null) {
-					List<CompletableFuture<Link>> pagesFutures = link.getChildrens()
-							.stream()
-							.map(x->getPageLinks(x, domain))
-							.collect(Collectors.toList());
-					
-					CompletableFuture.allOf(pagesFutures.toArray(new CompletableFuture[pagesFutures.size()])).get();
-				}
-				        
-				return link;
-			} catch (IOException | InterruptedException | ExecutionException e) {
-				System.err.println("For '" + url + "': " + e.getMessage());
-				return null;
-			}
-		});
+	private CompletableFuture<Link> getPageLinks(String url, URL domain) {
+		return CompletableFuture.supplyAsync(()-> asyncPageLinks(url, domain));
 	}
 
-	private boolean isInternalUrl(String url, String domain) {
-		return url.contains(domain);
+	private Link asyncPageLinks(String url, URL domain) {
+		if (links.containsKey(url)) return null;
+		try {
+			Link link = getLink(url, domain);
+			links.put(url, link);
+			getLinksChindren(domain, link);
+			return link;
+		} catch (IOException | InterruptedException | ExecutionException e) {
+			System.err.println("For '" + url + "': " + e.getMessage());
+			return null;
+		}
+	}
+
+	private void getLinksChindren(URL domain, Link link) throws InterruptedException, ExecutionException {
+		List<CompletableFuture<Link>> futuristicPage = link.getChildrens()
+				.stream()
+				.map(x->getPageLinks(x, domain))
+				.collect(Collectors.toList());
+		
+		CompletableFuture.allOf(futuristicPage.toArray(new CompletableFuture[futuristicPage.size()])).get();
+	}
+
+	private Link getLink(String url, URL domain) throws IOException {
+		Response con = Jsoup.connect(url).timeout(5000).execute();
+		Document document = con.parse();
+		Link link = linkConverter.from(document, con);
+		if (isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
+		return link;
+	}
+
+	private boolean isInternalUrl(String page, URL domain) throws MalformedURLException {
+		URL url = new URL(page);
+		return url.getHost().equals(domain.getHost());
 	}
 
 	private Set<String> getChildrens(Document document) {
 		return document.select("a[href]")
 				.stream()
-				.map(x->getUrlClean(x.absUrl("abs:href")))
-				.filter(x->x!=null)
+				.map(x -> getUrlClean(x.absUrl("href")))
+				.filter(x -> x != null)
 				.collect(Collectors.toSet());
 	}
 

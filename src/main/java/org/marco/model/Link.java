@@ -44,7 +44,5 @@ public class Link {
 	public String toString() {
 		return "Link [url=" + url + ", title=" + title + ", lastModified=" + lastModified + "]";
 	}
-	
-	
 
 }
