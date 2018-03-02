@@ -6,6 +6,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.jsoup.Connection.Response;
@@ -23,36 +25,44 @@ public class WebCrawlerService {
 	@Autowired
 	private LinkConverter linkConverter;
 
-	public List<Link> execute(String url) {
-		exec(url, url);
+	public List<Link> execute(String domain) throws InterruptedException, ExecutionException {
+		CompletableFuture <Link> cf = getPageLinks(domain, domain);
+		cf.get();
 		return links
 				.values()
 				.stream()
 				.collect(Collectors.toList());
+		
 	}
 	
-	private Link exec(String url, String domain) {
-		Link link = getPageLinks(url, url);
-		if(link != null) link.getChildrens().stream().forEach(x->getPageLinks(x, domain));
-		return link;
-	}
 	
-//	@Async
-	private Link getPageLinks(String url, String domain) {
-		if (links.containsKey(url)) return null;
-		try {
-			Response con =  Jsoup.connect(url).timeout(5000).execute();
-			Document document =  con.parse();
-			Link link = linkConverter.from(document, con);
-			
-			if(isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
-
-			links.put(url, link);
-			return link;
-		} catch (IOException e) {
-			System.err.println("For '" + url + "': " + e.getMessage());
-			return null;
-		}
+	private CompletableFuture<Link> getPageLinks(String url, String domain) {
+		return CompletableFuture.supplyAsync(() -> {
+			if (links.containsKey(url)) return null;
+			try {
+				Response con =  Jsoup.connect(url).timeout(5000).execute();
+				Document document =  con.parse();
+				Link link = linkConverter.from(document, con);
+				
+				if(isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
+	
+				links.put(url, link);
+				
+				if(link != null) {
+					List<CompletableFuture<Link>> pageContentFutures = 
+							link.getChildrens().stream().map(x->getPageLinks(x, domain)).collect(Collectors.toList());
+					
+					CompletableFuture<Void> allFutures = CompletableFuture.allOf(
+					        pageContentFutures.toArray(new CompletableFuture[pageContentFutures.size()]));
+					allFutures.get();
+				}
+				        
+				return link;
+			} catch (IOException | InterruptedException | ExecutionException e) {
+				System.err.println("For '" + url + "': " + e.getMessage());
+				return null;
+			}
+		});
 	}
 
 	private boolean isInternalUrl(String url, String domain) {
