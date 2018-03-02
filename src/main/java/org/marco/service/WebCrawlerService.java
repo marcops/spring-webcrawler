@@ -11,28 +11,36 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class WebCrawlerService {
-	private static final int MAX_DEPTH = 2;
 	private HashSet<String> links;
-
+	private String domain;
 	public WebCrawlerService() {
 		links = new HashSet<String>();
 	}
+	
+	public void execute(String url) {
+		domain = url;
+		getPageLinks(url);
+	}
 
-	public void getPageLinks(String URL, int depth) {
-		if ((!links.contains(URL) && (depth < MAX_DEPTH))) {
-			System.out.println(">> Depth: " + depth + " [" + URL + "]");
+	private void getPageLinks(String url) {
+		if (!links.contains(url)) {
+			System.out.println(url);
 			try {
-				links.add(URL);
+				links.add(url);
 
-				Document document = Jsoup.connect(URL).get();
+				Document document = Jsoup.connect(url).get();
 				Elements linksOnPage = document.select("a[href]");
 
-				depth++;
 				for (Element page : linksOnPage) {
-					getPageLinks(page.attr("abs:href"), depth);
+					String nextUrl = page.attr("abs:href");
+					if(nextUrl.contains(domain)) getPageLinks(nextUrl);
+					else if (!links.contains(nextUrl)) {
+						System.out.println(nextUrl);
+						links.add(nextUrl);
+					}
 				}
 			} catch (IOException e) {
-				System.err.println("For '" + URL + "': " + e.getMessage());
+				System.err.println("For '" + url + "': " + e.getMessage());
 			}
 		}
 	}
