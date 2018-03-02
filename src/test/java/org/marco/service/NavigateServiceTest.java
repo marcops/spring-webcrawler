@@ -7,20 +7,15 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.marco.convert.LinkConverter;
 import org.marco.model.Link;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 
 public class NavigateServiceTest {
 	
 	@InjectMocks
 	private NavigateService navigateService = new NavigateService(5000);
 	
-	@Spy
-	private LinkConverter linkConverter;
-			
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);

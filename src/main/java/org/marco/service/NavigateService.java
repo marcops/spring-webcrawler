@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.marco.convert.LinkConverter;
+import org.marco.build.LinkBuilder;
 import org.marco.model.Link;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +23,6 @@ public class NavigateService {
 	private HashMap<String, Link> links = new HashMap<>();
 
 	private Integer timeoutInMS;
-	
-	@Autowired
-	private LinkConverter linkConverter;
 	
 	public NavigateService(@Value("${webcrawler.timeout:5000}") Integer timeoutInMS) {
 		this.timeoutInMS = timeoutInMS;
@@ -68,7 +65,13 @@ public class NavigateService {
 	private Link getLink(String url, URL domain) throws IOException {
 		Response response = Jsoup.connect(url).timeout(timeoutInMS).execute();
 		Document document = response.parse();
-		Link link = linkConverter.from(document, response);
+
+		Link link = LinkBuilder.builder()
+				.url(document.location())
+				.title(document.title())
+				.lastModified(response.header("Last-Modified"))
+				.build();
+
 		if (isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
 		return link;
 	}
