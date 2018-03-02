@@ -43,12 +43,4 @@ public class LinkBuilder {
 		return this;
 	}
 
-	// public Link from(Document document, Response response) {
-	// Link link = new Link();
-	// link.setTitle(document.title());
-	// link.setUrl(document.location());
-	// link.setLastModified(response.header("Last-Modified"));
-	// link.setChildrens(new HashSet<>());
-	// return link;
-	// }
 }
