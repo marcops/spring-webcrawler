@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 
 @Service
 public class WebCrawlerService {
-	
 	private String exportTo;
 	private NavigateService navigateService;
 
@@ -25,8 +24,7 @@ public class WebCrawlerService {
 	}
 
 	public void execute(String url) throws Exception {
-		List<Link> links = navigateService.execute(url);
-		exportSitemap(links);
+		exportSitemap(navigateService.execute(url));
 	}
 
 	private void exportSitemap(List<Link> links) throws IOException {

@@ -25,20 +25,19 @@ public class LinkBuilder {
 		this.link.setTitle(title);
 		return this;
 	}
-	
+
 	public LinkBuilder url(String url) {
 		this.link.setUrl(url);
 		return this;
 	}
-	
+
 	public LinkBuilder lastModified(String lastModified) {
 		this.link.setLastModified(lastModified);
 		return this;
 	}
-	
+
 	public LinkBuilder childrens(Set<String> childrens) {
 		this.link.setChildrens(childrens);
 		return this;
 	}
-
 }
