@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -65,14 +66,12 @@ public class NavigateService {
 		Response response = Jsoup.connect(url).timeout(timeoutInMS).execute();
 		Document document = response.parse();
 
-		Link link = LinkBuilder.builder()
+		return LinkBuilder.builder()
 				.url(document.location())
 				.title(document.title())
 				.lastModified(response.header("Last-Modified"))
+				.childrens(isInternalUrl(url, domain) ? getChildrens(document) : new HashSet<String>())
 				.build();
-
-		if (isInternalUrl(url, domain)) link.setChildrens(getChildrens(document));
-		return link;
 	}
 
 	private boolean isInternalUrl(String page, URL domain) throws MalformedURLException {
