@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.marco.model.Link;
-import org.springframework.stereotype.Component;
 
-@Component
 public class LinkBuilder {
 	private Link link;
 
