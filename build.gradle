@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'org.springframework.boot' version '1.5.10.RELEASE'
+}
+
+repositories {
+    maven {
+        url 'https://repo.gradle.org/gradle/plugins-releases'
+    }
+}
+
+project.ext {
+    junitVersion = '4.12'
+    jsoupVersion = '1.11.2'
+}
+
+dependencies {
+	//Springboot
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+	//HTml parser
+    compile group: 'org.jsoup', name: 'jsoup', version: jsoupVersion
+   // testCompile group: 'junit', name: 'junit', version: junitVersion
+}
