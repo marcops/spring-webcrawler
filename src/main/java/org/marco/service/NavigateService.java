@@ -1,6 +1,5 @@
 package org.marco.service;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -15,23 +14,15 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.marco.builder.LinkBuilder;
 import org.marco.model.Link;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NavigateService {
 	private HashMap<String, Link> links = new HashMap<>();
 
-	private Integer timeoutInMS;
-	
-	public NavigateService(@Value("${webcrawler.timeout:5000}") Integer timeoutInMS) {
-		this.timeoutInMS = timeoutInMS;
-	}
-
 	public List<Link> execute(String domain) throws Exception  {
 		getPageLinks(domain, new URL(domain)).get();
-		return links
-				.values()
+		return links.values()
 				.stream()
 				.collect(Collectors.toList());
 	}
@@ -43,7 +34,17 @@ public class NavigateService {
 	private Link asyncPageLinks(String url, URL domain) {
 		try {
 			if (links.containsKey(url) || !isInternalUrl(url, domain)) return null;
-			Link link = getLink(url, domain);
+			
+			Response response = Jsoup.connect(url).execute();
+			Document document = response.parse();
+			
+			Link link = LinkBuilder.builder()
+					.url(document.location())
+					.title(document.title())
+					.lastModified(response.header("Last-Modified"))
+					.childrens(isInternalUrl(url, domain) ? getChildrens(document) : new HashSet<String>())
+					.build();
+			
 			links.put(url, link);
 			processLinksChildren(domain, link);
 			return link;
@@ -62,21 +63,8 @@ public class NavigateService {
 		CompletableFuture.allOf(futuristicPage.toArray(new CompletableFuture[futuristicPage.size()])).get();
 	}
 
-	private Link getLink(String url, URL domain) throws IOException {
-		Response response = Jsoup.connect(url).timeout(timeoutInMS).execute();
-		Document document = response.parse();
-
-		return LinkBuilder.builder()
-				.url(document.location())
-				.title(document.title())
-				.lastModified(response.header("Last-Modified"))
-				.childrens(isInternalUrl(url, domain) ? getChildrens(document) : new HashSet<String>())
-				.build();
-	}
-
 	private boolean isInternalUrl(String page, URL domain) throws MalformedURLException {
-		URL url = new URL(page);
-		return url.getHost().equals(domain.getHost());
+		return new URL(page).getHost().equals(domain.getHost());
 	}
 
 	private Set<String> getChildrens(Document document) {

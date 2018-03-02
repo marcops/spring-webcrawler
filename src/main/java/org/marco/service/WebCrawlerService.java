@@ -16,12 +16,12 @@ import com.google.gson.Gson;
 public class WebCrawlerService {
 	
 	private String exportTo;
-	
-	@Autowired
 	private NavigateService navigateService;
-	
-	public WebCrawlerService(@Value("${webcrawler.export.to:sitemap.json}") String exportTo) {
+
+	@Autowired
+	public WebCrawlerService(NavigateService navigateService, @Value("${webcrawler.export.to:sitemap.json}") String exportTo) {
 		this.exportTo = exportTo;
+		this.navigateService = navigateService;
 	}
 
 	public void execute(String url) throws Exception {

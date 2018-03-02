@@ -9,12 +9,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 public class WebCrawlerTest {
+
+	@Spy
+	private NavigateService navigateService;
 	
 	@InjectMocks
-	private WebCrawlerService webCrawlerService = new WebCrawlerService("sitemap.json");
-	
-	@Spy
-	private NavigateService navigateService = new NavigateService(5000);
+	private WebCrawlerService webCrawlerService = new WebCrawlerService(navigateService, "sitemap.json");
 	
 	@Before
 	public void setUp() {

@@ -14,7 +14,7 @@ import org.mockito.MockitoAnnotations;
 public class NavigateServiceTest {
 	
 	@InjectMocks
-	private NavigateService navigateService = new NavigateService(5000);
+	private NavigateService navigateService;
 	
 	@Before
 	public void setUp() {
