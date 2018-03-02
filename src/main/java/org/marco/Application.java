@@ -34,8 +34,7 @@ public class Application implements CommandLineRunner {
 
 	private void exportSitemap(List<Link> links) throws IOException {
 		Files.write(Paths.get(EXPORT_TO), new Gson().toJson(links).getBytes());
+		System.out.println(new Gson().toJson(links));
 	}
-
-	
 
 }

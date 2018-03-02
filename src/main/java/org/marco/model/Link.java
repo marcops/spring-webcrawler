@@ -1,12 +1,12 @@
 package org.marco.model;
 
-import java.util.HashSet;
+import java.util.Set;
 
 public class Link {
 	private String url;
 	private String title;
 	private String lastModified;
-	private HashSet<String> childrens;
+	private Set<String> childrens;
 
 	public String getUrl() {
 		return url;
@@ -24,12 +24,12 @@ public class Link {
 		this.title = title;
 	}
 
-	public HashSet<String> getChildrens() {
+	public Set<String> getChildrens() {
 		return childrens;
 	}
 
-	public void setChildrens(HashSet<String> childrens) {
-		this.childrens = childrens;
+	public void setChildrens(Set<String> set) {
+		this.childrens = set;
 	}
 
 	public String getLastModified() {
