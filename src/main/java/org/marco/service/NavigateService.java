@@ -2,12 +2,13 @@ package org.marco.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -18,22 +19,20 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NavigateService {
-	private HashMap<String, Link> links = new HashMap<>();
+	private Set<String> links = new HashSet<>();
 
 	public List<Link> execute(String domain) throws Exception  {
-		getPageLinks(domain, new URL(domain)).get();
-		return links.values()
-				.stream()
-				.collect(Collectors.toList());
+		return getPageLinks(domain, new URL(domain)).get();
 	}
 	
-	private CompletableFuture<Link> getPageLinks(String url, URL domain) {
+	private CompletableFuture<List<Link>> getPageLinks(String url, URL domain) {
 		return CompletableFuture.supplyAsync(()-> asyncPageLinks(url, domain));
 	}
 
-	private Link asyncPageLinks(String url, URL domain) {
+	private List<Link> asyncPageLinks(String url, URL domain) {
 		try {
-			if (links.containsKey(url) || !isInternalUrl(url, domain)) return null;
+			if (links.contains(url) || !isInternalUrl(url, domain)) return new ArrayList<>();
+			links.add(url);
 			
 			Response response = Jsoup.connect(url).execute();
 			Document document = response.parse();
@@ -45,22 +44,27 @@ public class NavigateService {
 					.childrens(isInternalUrl(url, domain) ? getChildrens(document) : new HashSet<String>())
 					.build();
 			
-			links.put(url, link);
-			processLinksChildren(domain, link);
-			return link;
+			return Stream
+					.concat(Stream.of(link), processLinksChildren(domain, link).stream())
+					.collect(Collectors.toList());
 		} catch (Exception e) {
 			System.err.println("For '" + url + "': " + e.getMessage());
-			return null;
+			return new ArrayList<>();
 		}
 	}
 
-	private void processLinksChildren(URL domain, Link link) throws Exception {
-		List<CompletableFuture<Link>> futuristicPage = link.getChildrens()
+	private List<Link> processLinksChildren(URL domain, Link link) throws Exception {
+		List<CompletableFuture<List<Link>>> futuristicPage = link.getChildrens()
 				.stream()
 				.map(x->getPageLinks(x, domain))
 				.collect(Collectors.toList());
 		
 		CompletableFuture.allOf(futuristicPage.toArray(new CompletableFuture[futuristicPage.size()])).get();
+		
+		return futuristicPage.stream()
+				  .map(CompletableFuture::join)
+				  .flatMap(listContainer -> listContainer.stream())
+				  .collect(Collectors.toList());
 	}
 
 	private boolean isInternalUrl(String page, URL domain) throws MalformedURLException {
