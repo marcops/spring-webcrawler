@@ -1,7 +1,10 @@
 # WebCrawler
 
-This project is a Proof of Concept. Use as you wish.
-The main objective with this project was to show my experience and skills about software engineering. I have developed having in mind the best write-code practices i've acquired on my career
+This is a simple webcrawler using springboot with async process and will generate a sitemap in json format.
+
+> This is a Proof of Concept project. Use as you wish. 
+> The main goal of this project is to demonstrate my experience and skills in software engineering. I have developed with the best write-code practices I've acquired on my career.
+
 
 ## Prerequisites
 
@@ -48,6 +51,8 @@ These instrutions should give you a sitemap.json, that contains a list of links 
 
 * I can change HashMap to REDIS, for use distributed.
 * Sharpen the unit tests 
+* More comments (Normally, I prefer a verbose code than comments)
+* domain can be moved to be a property in application.yml
 
 
 License

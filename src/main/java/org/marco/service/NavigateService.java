@@ -20,7 +20,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class NavigateService {
 	private Set<String> links = new HashSet<>();
-
+	
+	/**
+     * Discover all pages related with domain and export it 
+     * in a list content {@link Link} information
+     *
+     * @param   domain
+     *          the url domain to discover all pages related
+     *
+     * @return  A list content {@link Link} information
+     *
+     * @throws  Exception
+     *          if an error occurs an exception will be handle
+     */
 	public List<Link> execute(String domain) throws Exception  {
 		return getPageLinks(domain, new URL(domain)).get();
 	}
@@ -58,7 +70,7 @@ public class NavigateService {
 				.stream()
 				.map(x->getPageLinks(x, domain))
 				.collect(Collectors.toList());
-		
+		//wait all async process closed
 		CompletableFuture.allOf(futuristicPage.toArray(new CompletableFuture[futuristicPage.size()])).get();
 		
 		return futuristicPage.stream()

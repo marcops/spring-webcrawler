@@ -22,9 +22,21 @@ public class WebCrawlerService {
 		this.exportTo = exportTo;
 		this.navigateService = navigateService;
 	}
-
-	public void execute(String url) throws Exception {
-		exportSitemap(navigateService.execute(url));
+	
+	/**
+     * Discover all pages related with domain and export it 
+     * in a sitemap that uses json format
+     *
+     * @param   domain
+     *          the url domain to discover all pages related
+     *
+     * @return  none
+     *
+     * @throws  Exception
+     *          if an error occurs an exception will be handle
+     */
+	public void execute(String domain) throws Exception {
+		exportSitemap(navigateService.execute(domain));
 	}
 
 	private void exportSitemap(List<Link> links) throws IOException {
