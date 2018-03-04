@@ -52,7 +52,7 @@ These instrutions should give you a sitemap.json, that contains a list of links 
 * I can change HashMap to REDIS, for use distributed.
 * Sharpen the unit tests 
 * More comments (Normally, I prefer a verbose code than comments)
-* domain can be moved to be a property in application.yml
+* Domain parameter can be moved to be a property in application.yml
 
 
 License
